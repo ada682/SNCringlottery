@@ -152,7 +152,7 @@ async function participateInRingLottery() {
 
   try {
     const totalDraws = await askNumberOfDraws();
-    const drawsPerBatch = 50; //setbatchdraw
+    const drawsPerBatch = 10; //setbatchdraw
     const numBatches = Math.ceil(totalDraws / drawsPerBatch);
 
     const spinner = ora('Authenticating...').start();
