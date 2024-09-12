@@ -175,7 +175,7 @@ async function participateInRingLottery() {
     const numBatches = Math.ceil(totalDraws / drawsPerBatch);
 
     const spinner = ora('Authenticating...').start();
-    const token = await getToken(privateKey); // Use privateKey
+    const token = await getToken(privateKey);
     spinner.succeed('Authentication successful');
 
     for (let batch = 0; batch < numBatches; batch++) {
@@ -188,7 +188,7 @@ async function participateInRingLottery() {
       let batchTasks = [];
       
       for (let i = batchStart; i < batchEnd; i++) {
-        batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); // Pass privateKey
+        batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); 
       }
 
       await Promise.all(batchTasks);
@@ -222,7 +222,7 @@ async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
         spinner.succeed(chalk.green(`Transaction sent. Signature: ${signature.slice(0, 8)}...${signature.slice(-8)}`));
 
         spinner.start(chalk.blue('Participating in lottery draw'));
-        const drawResult = await participateLotteryDraw(token, signature, privateKey); // Pass privateKey
+        const drawResult = await participateLotteryDraw(token, signature, privateKey); 
         spinner.succeed(chalk.green('Draw participation complete'));
 
         result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.cyan('📊 Draw result:')} ${chalk.yellow(JSON.stringify(drawResult.data))}\n`;
@@ -233,8 +233,8 @@ async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
         let lotteryResult = await checkLotteryResult(token, blockNumber);
         if (lotteryResult.winner === null) {
             spinner.warn(chalk.yellow('No winner yet, retrying after 5 seconds...'));
-            await delay(5000); // Wait for 5 seconds 
-            lotteryResult = await checkLotteryResult(token, blockNumber); // Retry fetching the result
+            await delay(5000); 
+            lotteryResult = await checkLotteryResult(token, blockNumber); 
         }
 
         spinner.succeed(chalk.green('Lottery result received'));
