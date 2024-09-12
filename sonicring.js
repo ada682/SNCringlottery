@@ -202,8 +202,8 @@ async function participateInRingLottery() {
       await Promise.all(batchTasks); 
 
       if (batch < numBatches - 1) {
-        const waitSpinner = ora('Waiting 10 seconds before next batch...').start();
-        await delay(10000); // Wait 10 seconds 
+        const waitSpinner = ora('Waiting 30 seconds before next batch...').start();
+        await delay(30000); // Wait 30 seconds 
         waitSpinner.succeed('Ready for next batch');
       }
     }
