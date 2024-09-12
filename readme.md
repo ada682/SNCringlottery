@@ -23,12 +23,12 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/sonic-ring-lottery-bot.git
+   git clone https://github.com/ada682/SNCringlottery.git
    ```
 
 2. Navigate to the project directory:
    ```
-   cd sonic-ring-lottery-bot
+   cd SNCringlottery
    ```
 
 3. Install the required dependencies:
