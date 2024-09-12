@@ -166,17 +166,15 @@ async function participateInRingLottery() {
     process.exit(1);
   }
 
-  const keypair = getKeypairFromPrivateKey(privateKey);
+  let keypair = getKeypairFromPrivateKey(privateKey);
   logWithTimestamp(`🔑 Using wallet: ${keypair.publicKey.toBase58().slice(0, 8)}...${keypair.publicKey.toBase58().slice(-8)}`, 'cyan');
 
   try {
     const totalDraws = await askNumberOfDraws();
-    const drawsPerBatch = 10; //setbatchdraw
+    const drawsPerBatch = 15; 
     const numBatches = Math.ceil(totalDraws / drawsPerBatch);
 
-    const spinner = ora('Authenticating...').start();
-    const token = await getToken(privateKey);
-    spinner.succeed('Authentication successful');
+    let token = await getToken(privateKey); 
 
     for (let batch = 0; batch < numBatches; batch++) {
       const batchStart = batch * drawsPerBatch;
@@ -188,14 +186,24 @@ async function participateInRingLottery() {
       let batchTasks = [];
       
       for (let i = batchStart; i < batchEnd; i++) {
-        batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); 
+        // token 
+        try {
+          batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey));
+        } catch (error) {
+          if (error.response && error.response.status === 403) {
+            logWithTimestamp('Token expired or invalid. Refreshing token...');
+            token = await getToken(privateKey); // Refresh token
+            logWithTimestamp('Token refreshed.');
+            batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); 
+          }
+        }
       }
 
-      await Promise.all(batchTasks);
+      await Promise.all(batchTasks); 
 
       if (batch < numBatches - 1) {
         const waitSpinner = ora('Waiting 10 seconds before next batch...').start();
-        await delay(10000); 
+        await delay(10000); // Wait 10 seconds 
         waitSpinner.succeed('Ready for next batch');
       }
     }
@@ -207,47 +215,48 @@ async function participateInRingLottery() {
 }
 
 async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
-    let result = '';
-    const spinner = ora();
-    try {
-        spinner.start(chalk.blue(`Building lottery transaction for draw ${iteration} of ${totalDraws}`));
-        const txData = await buildLotteryTx(token);
-        const txBuffer = Buffer.from(txData.hash, 'base64');
-        const tx = solana.Transaction.from(txBuffer);
-        tx.partialSign(keypair);
-        spinner.succeed(chalk.green('Lottery transaction built'));
+  let result = '';
+  const spinner = ora();
+  try {
+    spinner.start(chalk.blue(`Building lottery transaction for draw ${iteration} of ${totalDraws}`));
+    const txData = await buildLotteryTx(token);
+    const txBuffer = Buffer.from(txData.hash, 'base64');
+    const tx = solana.Transaction.from(txBuffer);
+    tx.partialSign(keypair);
+    spinner.succeed(chalk.green('Lottery transaction built'));
 
-        spinner.start(chalk.blue('Sending transaction'));
-        const signature = await doTransactions(tx, keypair);
-        spinner.succeed(chalk.green(`Transaction sent. Signature: ${signature.slice(0, 8)}...${signature.slice(-8)}`));
+    spinner.start(chalk.blue('Sending transaction'));
+    const signature = await doTransactions(tx, keypair);
+    spinner.succeed(chalk.green(`Transaction sent. Signature: ${signature.slice(0, 8)}...${signature.slice(-8)}`));
 
-        spinner.start(chalk.blue('Participating in lottery draw'));
-        const drawResult = await participateLotteryDraw(token, signature, privateKey); 
-        spinner.succeed(chalk.green('Draw participation complete'));
+    spinner.start(chalk.blue('Participating in lottery draw'));
+    const drawResult = await participateLotteryDraw(token, signature, privateKey);
+    spinner.succeed(chalk.green('Draw participation complete'));
 
-        result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.cyan('📊 Draw result:')} ${chalk.yellow(JSON.stringify(drawResult.data))}\n`;
+    result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.cyan('📊 Draw result:')} ${chalk.yellow(JSON.stringify(drawResult.data))}\n`;
 
-        spinner.start(chalk.blue('Checking lottery result'));
-        const blockNumber = drawResult.data.block_number;
+    spinner.start(chalk.blue('Checking lottery result'));
+    const blockNumber = drawResult.data.block_number;
 
-        let lotteryResult = await checkLotteryResult(token, blockNumber);
-        if (lotteryResult.winner === null) {
-            spinner.warn(chalk.yellow('No winner yet, retrying after 5 seconds...'));
-            await delay(5000); 
-            lotteryResult = await checkLotteryResult(token, blockNumber); 
-        }
-
-        spinner.succeed(chalk.green('Lottery result received'));
-        result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.magenta('🏆 Result:')} ${chalk.yellow(JSON.stringify(lotteryResult))}\n`;
-
-    } catch (error) {
-        spinner.fail(chalk.red(`Error in draw ${iteration}: ${error.message}\n`));
+    let lotteryResult = await checkLotteryResult(token, blockNumber);
+    if (lotteryResult.winner === null) {
+      spinner.warn(chalk.yellow('No winner yet, retrying after 5 seconds...'));
+      await delay(5000); 
+      lotteryResult = await checkLotteryResult(token, blockNumber); 
     }
 
-    const watermark = chalk.bold.green(`\n\nPowered by t.me/slyntherinnn\n`);
-    result += watermark;
+    spinner.succeed(chalk.green('Lottery result received'));
+    result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.magenta('🏆 Result:')} ${chalk.yellow(JSON.stringify(lotteryResult))}\n`;
 
-    return result;
+    await delay(1000); // 1-second delay 
+  } catch (error) {
+    spinner.fail(chalk.red(`Error in draw ${iteration}: ${error.message}\n`));
+  }
+
+  const watermark = chalk.bold.green(`\n\nPowered by t.me/slyntherinnn\n`);
+  result += watermark;
+
+  return result;
 }
 
 (async () => {
