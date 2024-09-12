@@ -80,7 +80,7 @@ async function buildLotteryTx(token) {
   }
 }
 
-async function participateLotteryDraw(token, signature) {
+async function participateLotteryDraw(token, signature, privateKey) {
   try {
     const response = await axios({
       url: 'https://odyssey-api-beta.sonic.game/user/lottery/draw',
@@ -92,9 +92,14 @@ async function participateLotteryDraw(token, signature) {
   } catch (error) {
     if (error.response && error.response.status === 403) {
       console.log('Token might be invalid. Refreshing token...');
-      token = await getToken(privateKey); 
       
+      if (!privateKey) {
+        throw new Error('Private key is required to refresh token');
+      }
+
+      token = await getToken(privateKey);
       console.log('Retrying with new token...');
+
       const retryResponse = await axios({
         url: 'https://odyssey-api-beta.sonic.game/user/lottery/draw',
         method: 'POST',
@@ -170,7 +175,7 @@ async function participateInRingLottery() {
     const numBatches = Math.ceil(totalDraws / drawsPerBatch);
 
     const spinner = ora('Authenticating...').start();
-    const token = await getToken(privateKey);
+    const token = await getToken(privateKey); // Use privateKey
     spinner.succeed('Authentication successful');
 
     for (let batch = 0; batch < numBatches; batch++) {
@@ -183,14 +188,10 @@ async function participateInRingLottery() {
       let batchTasks = [];
       
       for (let i = batchStart; i < batchEnd; i++) {
-        batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws)); // Collect promises
+        batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); // Pass privateKey
       }
 
-      const results = await Promise.all(batchTasks);
-
-      for (let i = 0; i < results.length; i++) {
-        console.log(results[i]); 
-      }
+      await Promise.all(batchTasks);
 
       if (batch < numBatches - 1) {
         const waitSpinner = ora('Waiting 10 seconds before next batch...').start();
@@ -205,7 +206,7 @@ async function participateInRingLottery() {
   }
 }
 
-async function drawLottery(token, keypair, iteration, totalDraws) {
+async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
     let result = '';
     const spinner = ora();
     try {
@@ -221,7 +222,7 @@ async function drawLottery(token, keypair, iteration, totalDraws) {
         spinner.succeed(chalk.green(`Transaction sent. Signature: ${signature.slice(0, 8)}...${signature.slice(-8)}`));
 
         spinner.start(chalk.blue('Participating in lottery draw'));
-        const drawResult = await participateLotteryDraw(token, signature);
+        const drawResult = await participateLotteryDraw(token, signature, privateKey); // Pass privateKey
         spinner.succeed(chalk.green('Draw participation complete'));
 
         result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.cyan('📊 Draw result:')} ${chalk.yellow(JSON.stringify(drawResult.data))}\n`;
