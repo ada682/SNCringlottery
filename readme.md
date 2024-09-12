@@ -82,5 +82,6 @@ Contributions, issues, and feature requests are welcome! Feel free to check [iss
 - All the awesome Node.js library creators that made this bot possible
 
 ---
+NOTED : For the brutal batch at line 155, set it to whatever value you prefer. To avoid errors, just use the default value.
 
 Happy lottery-ing! May the odds be ever in your favor! 🍀
