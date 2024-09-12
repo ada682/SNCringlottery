@@ -72,16 +72,12 @@ This bot handles sensitive information (your private key). Always ensure:
 
 This project is licensed under the ISC License. See the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/yourusername/sonic-ring-lottery-bot/issues).
-
 ## 💡 Acknowledgements
 
 - [Sonic.game](https://sonic.game) for creating the OKX Web3 Campaign
 - All the awesome Node.js library creators that made this bot possible
 
 ---
-NOTED : For the brutal batch at line 155 in sonicring.js, set it to whatever value you prefer. To avoid errors, just use the default value.
+NOTED : For the brutal batch at line 174 in sonicring.js, set it to whatever value you prefer. To avoid errors, just use the default value.
 
 Happy lottery-ing! May the odds be ever in your favor! 🍀
