@@ -90,8 +90,22 @@ async function participateLotteryDraw(token, signature) {
     });
     return response.data;
   } catch (error) {
-    logWithTimestamp(`Error participating in lottery draw: ${error.message}`, 'red');
-    throw error;
+    if (error.response && error.response.status === 403) {
+      console.log('Token might be invalid. Refreshing token...');
+      token = await getToken(privateKey); 
+      
+      console.log('Retrying with new token...');
+      const retryResponse = await axios({
+        url: 'https://odyssey-api-beta.sonic.game/user/lottery/draw',
+        method: 'POST',
+        headers: { ...HEADERS, Authorization: token },
+        data: { hash: signature },
+      });
+      return retryResponse.data;
+    } else {
+      logWithTimestamp(`Error participating in lottery draw: ${error.message}`, 'red');
+      throw error;
+    }
   }
 }
 
