@@ -13,7 +13,10 @@ const base58 = require('bs58');
 const colors = require('colors');
 
 const DEVNET_URL = 'https://devnet.sonic.game/';
-const connection = new Connection(DEVNET_URL, 'confirmed');
+const connection = new Connection(DEVNET_URL, {
+  commitment: 'confirmed',
+  confirmTransactionInitialTimeout: 60000 
+});
 
 async function sendSol(fromKeypair, toPublicKey, amount) {
   const transaction = new Transaction().add(
@@ -72,6 +75,22 @@ async function doTransactions(transaction, keypair) {
       throw error;
     }
   }
+}
+
+async function getRecentBlockhashWithRetry(retryCount = 3) {
+  let blockhash;
+  for (let i = 0; i < retryCount; i++) {
+    try {
+      const { blockhash: latestBlockhash } = await connection.getRecentBlockhash();
+      blockhash = latestBlockhash;
+      break;
+    } catch (error) {
+      console.error(`Failed to get blockhash, attempt ${i + 1}: ${error.message}`);
+      if (i < retryCount - 1) await delay(5000); // Retry after 5 seconds
+    }
+  }
+  if (!blockhash) throw new Error('Unable to obtain blockhash after retries');
+  return blockhash;
 }
 
 function getKeypairFromPrivateKey(privateKey) {
