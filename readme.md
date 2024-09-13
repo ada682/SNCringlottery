@@ -48,17 +48,8 @@ Before you begin, ensure you have met the following requirements:
 To start the bot, run:
 
 ```
-npm start [number_of_draws]
+npm start OR node sonicring.js
 ```
-
-Replace `[number_of_draws]` with the number of lottery draws you want to participate in. If not specified, it defaults to 1.
-
-Example:
-```
-npm start 5
-```
-
-This will participate in 5 consecutive lottery draws.
 
 ## 🔒 Security
 
