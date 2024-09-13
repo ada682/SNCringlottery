@@ -15,7 +15,7 @@ const HEADERS = {
   'Sec-Fetch-Site': 'same-site',
   'Sec-Gpc': '1',
   'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 11; SM-T870) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.62 Safari/537.36',
 };
 
 module.exports = { HEADERS };
