@@ -48,7 +48,7 @@ Before you begin, ensure you have met the following requirements:
 To start the bot, run:
 
 ```
-npm start OR node sonicring.js
+sonicring.js
 ```
 
 ## 🔒 Security
