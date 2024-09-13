@@ -218,20 +218,20 @@ async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
   let result = '';
   const spinner = ora();
   try {
-    spinner.start(chalk.blue(`Building lottery transaction for draw ${iteration} of ${totalDraws}`));
+    spinner.start(chalk.blue(`Building Bomb and money transaction ${iteration} of ${totalDraws}`));
     const txData = await buildLotteryTx(token);
     const txBuffer = Buffer.from(txData.hash, 'base64');
     const tx = solana.Transaction.from(txBuffer);
     tx.partialSign(keypair);
     spinner.succeed(chalk.green('Lottery transaction built'));
 
-    spinner.start(chalk.blue('Sending transaction'));
+    spinner.start(chalk.blue('Sending bomb and money transaction'));
     const signature = await doTransactions(tx, keypair);
     spinner.succeed(chalk.green(`Transaction sent. Signature: ${signature.slice(0, 8)}...${signature.slice(-8)}`));
 
-    spinner.start(chalk.blue('Participating in lottery draw'));
+    spinner.start(chalk.blue('Participating in 911 tragedy'));
     const drawResult = await participateLotteryDraw(token, signature, privateKey);
-    spinner.succeed(chalk.green('Draw participation complete'));
+    spinner.succeed(chalk.green('Bomb has been defuse'));
 
     result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.cyan('📊 Draw result:')} ${chalk.yellow(JSON.stringify(drawResult.data))}\n`;
 
@@ -240,7 +240,7 @@ async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
 
     let lotteryResult = await checkLotteryResult(token, blockNumber);
     if (lotteryResult.winner === null) {
-      spinner.warn(chalk.yellow('No winner yet, retrying after 5 seconds...'));
+      spinner.warn(chalk.yellow('No winner yet, retrying sending nuke in 5 sec...'));
       await delay(5000); 
       lotteryResult = await checkLotteryResult(token, blockNumber); 
     }
