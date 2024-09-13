@@ -149,7 +149,7 @@ async function askNumberOfDraws() {
   });
 
   return new Promise((resolve) => {
-    rl.question('How many lottery draws would you like to perform? ', (answer) => {
+    rl.question('berapa banyak AK47 dan RPG yang kamu mau? ', (answer) => {
       rl.close();
       const numberOfDraws = parseInt(answer);
       resolve(isNaN(numberOfDraws) ? 1 : numberOfDraws);
@@ -171,7 +171,7 @@ async function participateInRingLottery() {
 
   try {
     const totalDraws = await askNumberOfDraws();
-    const drawsPerBatch = 15; 
+    const drawsPerBatch = 50; 
     const numBatches = Math.ceil(totalDraws / drawsPerBatch);
 
     let token = await getToken(privateKey); 
@@ -191,7 +191,7 @@ async function participateInRingLottery() {
           batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey));
         } catch (error) {
           if (error.response && error.response.status === 403) {
-            logWithTimestamp('Token expired or invalid. Refreshing token...');
+            logWithTimestamp('sending TNT has expired...');
             token = await getToken(privateKey); // Refresh token
             logWithTimestamp('Token refreshed.');
             batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); 
@@ -202,13 +202,13 @@ async function participateInRingLottery() {
       await Promise.all(batchTasks); 
 
       if (batch < numBatches - 1) {
-        const waitSpinner = ora('Waiting 13 seconds before next batch...').start();
-        await delay(13000); // Wait 13 seconds 
+        const waitSpinner = ora('Waiting 49 seconds before send AK47 and $70000...').start();
+        await delay(49000); // Wait 49 seconds 
         waitSpinner.succeed('Ready for next batch');
       }
     }
 
-    logWithTimestamp('🎉 Ring Lottery participation completed', 'green');
+    logWithTimestamp('🎉 sending AK46 succses , now lets take a shoot on random people!', 'green');
   } catch (error) {
     logWithTimestamp(`❌ An error occurred: ${error.message}`, 'red');
   }
