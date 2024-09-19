@@ -58,7 +58,7 @@ async function getToken(privateKey) {
       },
     });
 
-    logWithTimestamp(`Token obtained: ${response.data.data.token}`, 'cyan'); // Log token for debugging
+    logWithTimestamp(`Token obtained: ${response.data.data.token}`, 'cyan'); 
     return response.data.data.token;
   } catch (error) {
     logWithTimestamp(`Error fetching token: ${error.message}`, 'red');
@@ -192,7 +192,7 @@ async function participateInRingLottery() {
         } catch (error) {
           if (error.response && error.response.status === 403) {
             logWithTimestamp('Token expired or invalid. Refreshing token...');
-            token = await getToken(privateKey); // Refresh token
+            token = await getToken(privateKey); 
             logWithTimestamp('Token refreshed.');
             batchTasks.push(drawLottery(token, keypair, i + 1, totalDraws, privateKey)); 
           }
@@ -203,7 +203,7 @@ async function participateInRingLottery() {
 
       if (batch < numBatches - 1) {
         const waitSpinner = ora('Waiting 59 seconds before next batch...').start();
-        await delay(59000); // Wait 59 seconds 
+        await delay(59000);
         waitSpinner.succeed('Ready for next batch');
       }
     }
@@ -248,7 +248,7 @@ async function drawLottery(token, keypair, iteration, totalDraws, privateKey) {
     spinner.succeed(chalk.green('Lottery result received'));
     result += `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${chalk.magenta('🏆 Result:')} ${chalk.yellow(JSON.stringify(lotteryResult))}\n`;
 
-    await delay(1000); // 1-second delay 
+    await delay(1000); 
   } catch (error) {
     spinner.fail(chalk.red(`Error in draw ${iteration}: ${error.message}\n`));
   }
