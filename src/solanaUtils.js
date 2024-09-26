@@ -10,7 +10,6 @@ const {
 const bip39 = require('bip39');
 const { derivePath } = require('ed25519-hd-key');
 const base58 = require('bs58');
-const colors = require('colors');
 
 const DEVNET_URL = 'https://devnet.sonic.game/';
 const connection = new Connection(DEVNET_URL, {
@@ -19,18 +18,34 @@ const connection = new Connection(DEVNET_URL, {
 });
 
 async function sendSol(fromKeypair, toPublicKey, amount) {
+  const balance = await connection.getBalance(fromKeypair.publicKey);
+  console.log(`Current Balance: ${balance} lamports`);
+
+  const lamportsToSend = amount * LAMPORTS_PER_SOL;
+  console.log(`Attempting to send: ${lamportsToSend} lamports`);
+
+  if (balance < lamportsToSend) {
+    throw new Error(`Insufficient balance. Current balance: ${balance} lamports, required: ${lamportsToSend} lamports.`);
+  }
+
   const transaction = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: fromKeypair.publicKey,
       toPubkey: toPublicKey,
-      lamports: amount * LAMPORTS_PER_SOL,
+      lamports: lamportsToSend,
     })
   );
 
-  const signature = await sendAndConfirmTransaction(connection, transaction, [
-    fromKeypair,
-  ]);
-  console.log(colors.green('Transaction confirmed with signature:'), signature);
+  try {
+    const signature = await sendAndConfirmTransaction(connection, transaction, [fromKeypair]);
+    console.log('Transaction confirmed with signature:', signature);
+  } catch (error) {
+    console.error('Transaction failed', error);
+    if (error.logs) {
+      console.error('Logs:', error.logs);
+    }
+    throw error;
+  }
 }
 
 function generateRandomAddresses(count) {
@@ -55,10 +70,9 @@ async function doTransactions(transaction, keypair) {
     }
   } catch (error) {
     if (error.message.includes('block height exceeded')) {
-      console.error(colors.red('Transaction expired: block height exceeded.'));
-      console.log(colors.yellow('Retrying the transaction...'));
+      console.error('Transaction expired: block height exceeded.');
+      console.log('Retrying the transaction...');
 
-      // Retry
       try {
         const retrySignature = await sendAndConfirmTransaction(connection, transaction, [keypair]);
         if (retrySignature) {
@@ -67,30 +81,14 @@ async function doTransactions(transaction, keypair) {
           throw new Error('Retry failed, no signature returned');
         }
       } catch (retryError) {
-        console.error(colors.red(`Retry failed: ${retryError.message}`));
+        console.error(`Retry failed: ${retryError.message}`);
         throw retryError;
       }
     } else {
-      console.error(colors.red('Transaction failed'), error);
+      console.error('Transaction failed', error);
       throw error;
     }
   }
-}
-
-async function getRecentBlockhashWithRetry(retryCount = 3) {
-  let blockhash;
-  for (let i = 0; i < retryCount; i++) {
-    try {
-      const { blockhash: latestBlockhash } = await connection.getRecentBlockhash();
-      blockhash = latestBlockhash;
-      break;
-    } catch (error) {
-      console.error(`Failed to get blockhash, attempt ${i + 1}: ${error.message}`);
-      if (i < retryCount - 1) await delay(5000); // Retry after 5 seconds
-    }
-  }
-  if (!blockhash) throw new Error('Unable to obtain blockhash after retries');
-  return blockhash;
 }
 
 function getKeypairFromPrivateKey(privateKey) {
